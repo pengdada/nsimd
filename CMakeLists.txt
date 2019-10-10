@@ -45,8 +45,6 @@ if (ENABLE_BENCHMARK)
     ## Force it for benches
     set(CMAKE_BUILD_TYPE Release)
     find_package(benchmark REQUIRED)
-    find_package(Sleef REQUIRED)
-    find_package(MIPP REQUIRED)
     if (NOT MSVC)
         set(PTHREAD_LIBRARY pthread)
     endif()
@@ -172,9 +170,8 @@ function(make_benches root pattern)
         add_executable(${target} ${src})
         set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
         target_link_libraries(${target} ${libname} ${benchmark_LIBRARY}
-                              ${PTHREAD_LIBRARY} ${Sleef_LIBRARIES})
-        target_include_directories(${target} PRIVATE ${benchmark_INCLUDE_DIRS}
-                                   ${Sleef_INCLUDE_DIRS} ${MIPP_INCLUDE_DIRS})
+                              ${PTHREAD_LIBRARY})
+        target_include_directories(${target} PRIVATE ${benchmark_INCLUDE_DIRS})
         set_target_properties(${target} PROPERTIES COMPILE_FLAGS
                               "${flag_cpp14} ${flag_O3} ${SIMD_INFO_FLAGS}")
         ## Attach to the main benches target

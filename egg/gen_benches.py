@@ -501,37 +501,37 @@ class BenchOperator(object, metaclass=type):
     def bench_against_libs(self):
         bench = self.bench_against_init()
         ## Enable bench against all other libraries
-        if self.bench_auto_against_mipp:
-            for typ in self.bench_mipp_types():
-                ## MIPP always requires template
-                mipp_name = self.bench_mipp_name(typ)
-                signature = sig_translate(self.signature, {
-                    'v': 'mipp::reg',
-                    'l': 'mipp::msk',
-                    }, name=mipp_name)
-                if signature:
-                    bench['*'][typ]['MIPP'] = signature
-        if self.bench_auto_against_sleef:
-            for simd in common.simds:
-                for typ in self.bench_sleef_types():
-                    if not common.sleef_support_type(simd, typ):
-                        continue
-                    sleef_name = self.bench_sleef_name(simd, typ)
-                    if sleef_name is None:
-                        continue
-                    ## IMPORTANT:
-                    ## If simd is cpu, then make the signature using scalar
-                    if simd == 'cpu':
-                        signature = sig_translate(self.signature, {
-                            's': 'volatile-s',
-                            'v': 'volatile-s',
-                            'l': 'volatile-s',
-                            }, sleef_name)
-                    else:
-                        signature = sig_translate(self.signature, {},
-                                                        sleef_name)
-                    if signature:
-                        bench[simd][typ]['Sleef'] = signature
+        #if self.bench_auto_against_mipp:
+        #    for typ in self.bench_mipp_types():
+        #        ## MIPP always requires template
+        #        mipp_name = self.bench_mipp_name(typ)
+        #        signature = sig_translate(self.signature, {
+        #            'v': 'mipp::reg',
+        #            'l': 'mipp::msk',
+        #            }, name=mipp_name)
+        #        if signature:
+        #            bench['*'][typ]['MIPP'] = signature
+        #if self.bench_auto_against_sleef:
+        #    for simd in common.simds:
+        #        for typ in self.bench_sleef_types():
+        #            if not common.sleef_support_type(simd, typ):
+        #                continue
+        #            sleef_name = self.bench_sleef_name(simd, typ)
+        #            if sleef_name is None:
+        #                continue
+        #            ## IMPORTANT:
+        #            ## If simd is cpu, then make the signature using scalar
+        #            if simd == 'cpu':
+        #                signature = sig_translate(self.signature, {
+        #                    's': 'volatile-s',
+        #                    'v': 'volatile-s',
+        #                    'l': 'volatile-s',
+        #                    }, sleef_name)
+        #            else:
+        #                signature = sig_translate(self.signature, {},
+        #                                                sleef_name)
+        #            if signature:
+        #                bench[simd][typ]['Sleef'] = signature
         if self.bench_auto_against_std:
             for simd in common.simds:
                 for typ in self.bench_std_types():
@@ -706,7 +706,7 @@ def gen_bench_from_code(f, typ, code, bench_with_timestamp):
     // Sleef
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wignored-qualifiers"
-    #include <sleef.h>
+    //#include <sleef.h>
     #pragma GCC diagnostic pop
 
     // MIPP
@@ -718,7 +718,7 @@ def gen_bench_from_code(f, typ, code, bench_with_timestamp):
     #if defined(__clang__)
     #pragma GCC diagnostic ignored "-Wzero-length-array"
     #endif
-    #include <mipp.h>
+    //#include <mipp.h>
     #pragma GCC diagnostic pop
     '''
     return \
