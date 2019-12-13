@@ -336,7 +336,7 @@ def enum(l):
 # c*  = Pointer to const scalar parameter
 # _   = void (only for return type)
 # p   = Parameter (int)
-
+# b   = Boolean
 
 # -----------------------------------------------------------------------------
 # Type generators

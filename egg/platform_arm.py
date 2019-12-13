@@ -785,12 +785,12 @@ def shl_shr(op, simd_ext, typ):
                                format(armop=armop, **fmtspec)
 
 # -----------------------------------------------------------------------------
-# Set1
+# set1
 
 def set1(simd_ext, typ):
     if simd_ext in neon:
         if typ == 'f16':
-            return '''#ifdef NSIMD_FP16
+            return '''#ifdef nsimd_fp16
                         return vdupq_n_f16({in0});
                       #else
                         nsimd_{simd_ext}_vf16 ret;
@@ -810,7 +810,30 @@ def set1(simd_ext, typ):
         return 'return svdup_n_{suf}({in0});'.format(**fmtspec)
 
 # -----------------------------------------------------------------------------
-## Comparison operators: ==, <, <=, >, >=
+# set1l
+
+def lset1(simd_ext, typ):
+    if simd_ext == 'neon128' and typ == 'f64':
+        return '''nsimd_neon128_vlf64 ret;
+                  ret.v0 = (u64)({in0} ? -1 : 0);
+                  ret.v1 = (u64)({in0} ? -1 : 0);
+                  return ret;'''.format(**fmtspec)
+    normal = '''return vreinterpretq_{suf}_s32(
+                           {in0} ? vdup_n_s32(-1) : vdup_n_s32(0));'''. \
+                           format(**fmtspec)
+    if simd_ext in neon and typ == 'f16':
+        return '''#ifdef NSIMD_FP16
+                  #else
+                  #endif'''.format(**fmtspec)
+    if simd_ext in neon:
+        return normal
+    elif simd_ext in sve:
+        return \
+        'return {in0} ? svptrue_b{typnbits}() : svpfalse_b{typnbits}();'. \
+        format(**fmtspec)
+
+# -----------------------------------------------------------------------------
+## comparison operators: ==, <, <=, >, >=
 
 def cmp2(op, simd_ext, typ):
     binop = {'eq': '==', 'lt': '<', 'le': '<=', 'gt': '>', 'ge': '>='}
@@ -1971,6 +1994,7 @@ def get_impl(func, simd_ext, from_typ, to_typ):
         'shl': lambda: shl_shr("shl", simd_ext, from_typ),
         'shr': lambda: shl_shr("shr", simd_ext, from_typ),
         'set1': lambda: set1(simd_ext, from_typ),
+        'set1l': lambda: lset1(simd_ext, from_typ),
         'eq': lambda: cmp2("eq", simd_ext, from_typ),
         'lt': lambda: cmp2("lt", simd_ext, from_typ),
         'le': lambda: cmp2("le", simd_ext, from_typ),

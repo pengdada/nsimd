@@ -462,6 +462,20 @@ def cmp2_with_add(func, simd_ext, typ):
                 format(func=func, cte=cte[typ],
                        ityp='i{}'.format(typ[1:]), **fmtspec)
 
+def all_bits_to(value, simd_ext, typ):
+    if value == 0:
+        return '{pre}setzero{sufsi}()'.format(**fmtspec)
+    else:
+        if typ in common.ftypes:
+            return '''{pre}cmpeq_ps({pre}setzeros{sufsi}(),
+                                    {pre}setzeros{sufsi}())'''. \
+                                    format(**fmtspec)
+        else:
+            return '''{pre}castps{pre}_si{typnbits}(
+                          cmpeq_ps({pre}setzeros{sufsi}(),
+                                   {pre}setzeros{sufsi}()))'''. \
+                                   format(**fmtspec)
+
 # -----------------------------------------------------------------------------
 # Returns C code for func
 
@@ -1008,6 +1022,21 @@ def set1(simd_ext, typ):
                   buf.u = {in0};
                   return {pre}set1{suf}(buf.i);'''.format(**fmtspec)
     return 'return {pre}set1{suf}({in0});'.format(**fmtspec)
+
+# -----------------------------------------------------------------------------
+## set1l or splat function (for logicals)
+
+def lset1(simd_ext, typ):
+    if typ == 'f16':
+        return '''nsimd_{simd_ext}_vlf16 ret;
+                  ret.v0 = nsimd_set1l_{simd_ext}_f32({in0});
+                  ret.v1 = nsimd_set1l_{simd_ext}_f32({in0});
+                  return ret;'''.format(**fmtspec)
+    if simd_ext in sse + avx:
+        return 'return {in0} ? {all_ones} : {all_zeros};'. \
+               format(all_ones=all_bits_to(1), all_zeros=all_bits_to(0))
+    else:
+        return 'return (__mmask{le})({in0} ? -1 : 0);'.format(**fmtspec)
 
 # -----------------------------------------------------------------------------
 ## Equality
@@ -2914,6 +2943,7 @@ def get_impl(func, simd_ext, from_typ, to_typ):
         'shl': lambda: shl_shr('shl', simd_ext, from_typ),
         'shr': lambda: shl_shr('shr', simd_ext, from_typ),
         'set1': lambda: set1(simd_ext, from_typ),
+        'set1l': lambda: lset1(simd_ext, from_typ),
         'eq': lambda: eq2(simd_ext, from_typ),
         'ne': lambda: neq2(simd_ext, from_typ),
         'gt': lambda: gt2(simd_ext, from_typ),

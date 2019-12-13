@@ -1337,7 +1337,8 @@ def doit(opts):
         if op_name  in ['if_else1', 'loadu', 'loada', 'storeu', 'storea',
                         'len', 'loadlu', 'loadla', 'storelu', 'storela',
                         'set1', 'store2a', 'store2u', 'store3a', 'store3u',
-                        'store4a', 'store4u', 'downcvt', 'to_logical']:
+                        'store4a', 'store4u', 'downcvt', 'to_logical',
+                        'set1l']:
             continue
         for typ in operator.types:
             if operator.name in ['notb', 'andb', 'xorb', 'orb'] and \

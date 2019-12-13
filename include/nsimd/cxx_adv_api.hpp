@@ -120,6 +120,9 @@ NSIMD_STRUCT packl<T, 1, SimdExt> {
   // Default ctor
   packl() {}
 
+  // Ctor taking a boolean
+  packl(bool b) { car = nsimd::set1l(int(b)); }
+
   // Ctor taking a SIMD vector
   packl(simd_vectorl v) { car = v; }
 
@@ -135,6 +138,12 @@ template <typename T, int N, typename SimdExt>
 NSIMD_STRUCT packl {
   typename simd_traits<T, SimdExt>::simd_vectorl car;
   packl<T, N - 1, SimdExt> cdr;
+
+  // Default ctor
+  packl() {}
+
+  // Ctor taking a boolean
+  packl(bool b) { car = nsimd::set1l(int(b)); cdr = }
 
   typedef T value_type;
   typedef SimdExt simd_ext;

@@ -367,6 +367,15 @@ def set1(typ):
 
 # -----------------------------------------------------------------------------
 
+def set1l(typ):
+    content = repeat_stmt('ret.v{{i}} = (u32)({in0} ? -1 : 0);'. \
+              format(**fmtspec), typ)
+    return '''nsimd_cpu_vl{typ} ret;
+              {content}
+              return ret;'''.format(content=content, **fmtspec)
+
+# -----------------------------------------------------------------------------
+
 def load(typ):
     if typ == 'f16':
         content = repeat_stmt(
@@ -778,6 +787,7 @@ def get_impl(func, simd_ext, from_typ, to_typ=''):
         'notl': lambda: lnot1(from_typ),
         'sqrt': lambda: sqrt1(from_typ),
         'set1': lambda: set1(from_typ),
+        'set1l': lambda: set1l(from_typ),
         'shr': lambda: bitwise1_param('>>', from_typ),
         'shl': lambda: bitwise1_param('<<', from_typ),
         'eq': lambda: cmp2('==', from_typ),
