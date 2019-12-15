@@ -442,7 +442,7 @@ class Set1(Operator):
 
 class Set1l(Operator):
     full_name = 'boolean value broadcast'
-    signature = 'v set1l p'
+    signature = 'l set1l p'
     categories = [DocMisc]
     desc = 'Returns a vector whose all elements are set to the given value.'
 

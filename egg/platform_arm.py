@@ -823,8 +823,13 @@ def lset1(simd_ext, typ):
                            format(**fmtspec)
     if simd_ext in neon and typ == 'f16':
         return '''#ifdef NSIMD_FP16
+                    {normal}
                   #else
-                  #endif'''.format(**fmtspec)
+                    nsimd_{simd_ext}_vlf16 ret;
+                    ret.v0 = nsimd_{simd_ext}_f32({in0});
+                    ret.v1 = nsimd_{simd_ext}_f32({in0});
+                    return ret;
+                  #endif'''.format(normal=normal, **fmtspec)
     if simd_ext in neon:
         return normal
     elif simd_ext in sve:

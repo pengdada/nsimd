@@ -467,14 +467,10 @@ def all_bits_to(value, simd_ext, typ):
         return '{pre}setzero{sufsi}()'.format(**fmtspec)
     else:
         if typ in common.ftypes:
-            return '''{pre}cmpeq_ps({pre}setzeros{sufsi}(),
-                                    {pre}setzeros{sufsi}())'''. \
-                                    format(**fmtspec)
+            return '{pre}castsi{nbits}{suf}({pre}set1_epi32(-1))'. \
+                   format(**fmtspec)
         else:
-            return '''{pre}castps{pre}_si{typnbits}(
-                          cmpeq_ps({pre}setzeros{sufsi}(),
-                                   {pre}setzeros{sufsi}()))'''. \
-                                   format(**fmtspec)
+            return '{pre}set1_epi32(-1)'.format(**fmtspec)
 
 # -----------------------------------------------------------------------------
 # Returns C code for func
@@ -1034,7 +1030,9 @@ def lset1(simd_ext, typ):
                   return ret;'''.format(**fmtspec)
     if simd_ext in sse + avx:
         return 'return {in0} ? {all_ones} : {all_zeros};'. \
-               format(all_ones=all_bits_to(1), all_zeros=all_bits_to(0))
+               format(all_ones=all_bits_to(1, simd_ext, typ),
+                      all_zeros=all_bits_to(0, simd_ext, typ),
+                      **fmtspec)
     else:
         return 'return (__mmask{le})({in0} ? -1 : 0);'.format(**fmtspec)
 
