@@ -30,33 +30,55 @@ struct with_mask_t {};
 
 #define KERNEL(name, ...)                                                     \
   template <typename FLOAT>                                                   \
-  inline void name(nat thread_id_, nsimd::to_logical_t<FLOAT> thread_mask_,   \
-                   nsimd::no_mask_t need_mask, __VA_ARGS__)
+  inline void name(int thread_id_, nsimd::no_mask_t need_mask_,               \
+                   nsimd::to_logical_t<FLOAT> thread_mask_, __VA_ARGS__)
 
 #define GET_THREAD_ID() thread_id_
 
 #define CALL_ELTWISE(name, size, ...)                                         \
   {                                                                           \
-    nat i;                                                                    \
-    __asm__ __volatile__("cpuid");                                            \
-    __asm__ __volatile__("cpuid");                                            \
-    __asm__ __volatile__("cpuid");                                            \
-    __asm__ __volatile__("cpuid");                                            \
-    for (i = 0; i < size; i += nsimd::len(nsimd::pack<float>())) {            \
-      name<nsimd::pack<float> >(i, nsimd::packl<float>(true),                 \
-                                nsimd::no_mask_t(), __VA_ARGS__);             \
+    int thread_id_;                                                           \
+    nsimd::packl<float> thread_all_true_(true);                               \
+    int len = nsimd::len(nsimd::pack<float>());                               \
+    for (thread_id_ = 0; thread_id_ < size; thread_id_ += len) {              \
+      name<nsimd::pack<float> >(thread_id_, nsimd::no_mask_t(),               \
+                                thread_all_true_, __VA_ARGS__);               \
     }                                                                         \
-    __asm__ __volatile__("cpuid");                                            \
-    __asm__ __volatile__("cpuid");                                            \
-    __asm__ __volatile__("cpuid");                                            \
-    __asm__ __volatile__("cpuid");                                            \
-    for (; i < size; i++) {                                                   \
-      name<float>(i, true, nsimd::no_mask_t(), __VA_ARGS__);                  \
+    for (; thread_id_ < size; thread_id_++) {                                 \
+      name<float>(thread_id_, nsimd::no_mask_t(), true, __VA_ARGS__);         \
     }                                                                         \
   }
 
+template <typename NeedMask, typename Type> struct store_mov_helper_t {};
+
+template <> struct store_mov_helper_t<nsimd::no_mask_t, float> {
+  static void store(float *dst, Type src, bool) {
+    nsimd::storeu(dst, src);
+  }
+};
+
+template <typename Type> struct store_mov_helper_t<nsimd::with_mask_t, Type> {
+  static void store(float *dst, Type src) {
+    Type
+    nsimd::storeu(dst, src);
+  }
+};
+
 #define STORE(dst, src) nsimd::storeu(&(dst), src)
 #define LOAD(src) nsimd::loadu<nsimd::pack<float> >(&(src))
+
+#define IF(cond)                                                              \
+  nsimd::to_logical_t<FLOAT> thread_new_mask_ = (cond);                       \
+  auto thread_then_code_ = [&](nsimd::to_logical_t<FLOAT> thread_mask_) {
+
+#define ELSE                                                                  \
+  }                                                                           \
+  ;                                                                           \
+  auto thread_else_code_ = [&](nsimd::to_logical_t<FLOAT> thread_mask_) {
+
+#define ENDIF                                                                 \
+  }                                                                           \
+  ;
 
 #endif
 

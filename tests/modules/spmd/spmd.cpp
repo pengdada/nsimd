@@ -1,8 +1,20 @@
 #include <nsimd/modules/spmd.hpp>
 
 KERNEL(test_add, float *dst, float *src1, float *src2) {
-  nat i = GET_THREAD_ID();
+  int i = GET_THREAD_ID();
   STORE(dst[i], LOAD(src1[i]) + LOAD(src2[i]));
+}
+
+KERNEL(test_if, float *dst, float *src1, float *src2) {
+  int i = GET_THREAD_ID();
+  FLOAT a, b;
+  MOV(a, LOAD(src1[i]));
+  MOV(b, LOAD(src2[i]));
+  IF(a < b)
+    STORE(dst[i], b - a);
+  ELSE
+    STORE(dst[i], a - b);
+  ENDIF
 }
 
 int main(void) {
