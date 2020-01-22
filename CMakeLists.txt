@@ -66,6 +66,10 @@ compiler_flags(G     flag_g)
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
 endif()
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+endif()
 
 ## SIMD setup
 ## ----------------------------------------------------------------------------
