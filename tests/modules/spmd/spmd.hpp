@@ -4,25 +4,24 @@
 #include <vector>
 
 #ifdef NSIMD_IS_NVCC
-template <typename T>
+template <typename Device, typename T>
 KERNEL(init, T *v) {
   nat i = GET_THREAD_ID();
   STORE(v[i], int(i));
 }
 #endif
 
-template <typename T>
+template <typename Device, typename T>
 KERNEL(test_add, T *dst, T *src1, T *src2) {
   nat i = GET_THREAD_ID();
-  STORE(dst[i], LOAD(int, src1[i]) + LOAD(int, src2[i]));
-  IF (src1[i] % 2 == 0)
-    printf("IF: i = %i\n", int(i));
-    STORE(dst[i], LOAD(int, dst[i]) + 100);
+  STORE(dst[i], LOAD(src1[i]) + LOAD(src2[i]));
+  IF (LOAD(src1[i]) >= SET(5))
+    STORE(dst[i], LOAD(dst[i]) + 100);
   ENDIF()
 }
 
 #ifdef NSIMD_IS_NVCC
-template <typename T>
+template <typename Device, typename T>
 KERNEL(print, T *dst, T *src1, T *src2) {
   nat i = GET_THREAD_ID();
   printf("%i: %i + %i = %i\n", int(i), src1[i], src2[i], dst[i]);
